@@ -131,7 +131,6 @@ def newton_minimo_MOD(gradiente, Hess, x0, tolx, tolf, nmax):
     return None, None, None
       
   s = -np.linalg.solve(matHess, gradiente_x0)
-  print(s)
   # Aggiornamento della soluzione
   it = 1
   x1 = x0 + s

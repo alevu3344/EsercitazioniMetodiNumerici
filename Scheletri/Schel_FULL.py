@@ -728,6 +728,8 @@ def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
     Dinv= np.diag(1/d)
     E= np.tril(A,-1)
     F= np.triu(A,1)
+    M=D+E
+    N=-F
     Momega=D+omega*E
     Nomega=(1-omega)*D-omega*F
     T=np.dot(np.linalg.inv(Momega),Nomega)
@@ -735,8 +737,7 @@ def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
     raggiospettrale=np.max(np.abs(autovalori))
     print("raggio spettrale Gauss-Seidel SOR ", raggiospettrale)
     
-    M=D+E
-    N=-F
+    
     it=0
     xold=x0.copy()
     xnew=x0.copy()

@@ -257,7 +257,7 @@ def newton_mod(fname,fpname,m,x0,tolx,tolf,nmax):
   xk.append(x1)
   it=1
 
-  while abs(fx1-fx0) >= tolf and it  < nmax and abs(d) >= tolf * abs(x1):
+  while abs(fx1) >= tolf and it  < nmax and abs(d) >= tolx * abs(x1):
       x0= x1
       fx0= fname(x0)
       if abs(fpname(x0))<=np.spacing(1) :
@@ -330,11 +330,11 @@ def my_newtonSys(fun, jac, x0, tolx, tolf, nmax):
 
   Xm = [np.linalg.norm(s, 1)/np.linalg.norm(x1,1)]
 
-  while it < nmax and npl.norm(fx1, 1) >= tolf and npl.norm(s,1)/npl.norm(x1,1) >= tolx:
+  while it <= nmax and npl.norm(fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
     x0 = x1
     it += 1
     matjac = jac(x0)
-    if npl.det(matjac):
+    if npl.det(matjac) == 0:
             print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
             return None, None,None
 
@@ -353,22 +353,23 @@ def my_newtonSys_corde(fun, jac, x0, tolx, tolf, nmax):
 
   """
   Funzione per la risoluzione del sistema f(x)=0
-  mediante il metodo di Newton, con variante delle corde, in cui lo Jacobiano non viene calcolato
-  ad ogni iterazione, ma rimane fisso, calcolato nell'iterato iniziale x0.
-  
- Parametri
+  mediante il metodo di Newton.
+
+  Parametri
   ----------
-  fun : funzione vettoriale contenente ciascuna equazione non lineare del sistema.
-  jac : funzione che calcola la matrice Jacobiana della funzione vettoriale.
+  fun : stringa
+    Nome del file contenente la funzione non lineare.
+  jac : stringa
+    Nome del file contenente la matrice Jacobiana della funzione.
   x0 : array
     Vettore contenente l'approssimazione iniziale della soluzione.
   tolx : float
-    Parametro di tolleranza per l'errore tra due soluzioni successive.
+    Parametro di tolleranza per l'errore assoluto.
   tolf : float
-    Parametro di tolleranza sul valore della funzione.
+    Parametro di tolleranza per l'errore relativo.
   nmax : int
     Numero massimo di iterazioni.
-    
+
   Restituisce
   -------
   x : array
@@ -379,11 +380,11 @@ def my_newtonSys_corde(fun, jac, x0, tolx, tolf, nmax):
       Vettore contenente la norma dell'errore relativo tra due iterati successivi.
   """
 
-  matjac = jac(x0)   
-  if npl.det(matjac) == 0:
+  matjac = jac(x0)  #Utilizzo per tutte le iterazioni la matrice Jacobiana valutata nell'ierato iniziale, senza mai aggiornarla
+  if np.linalg.det(matjac) == 0:
     print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
     return None, None,None
-  s = - npl.solve(matjac, fun(x0))
+  s = -np.linalg.solve(matjac, fun(x0))
   # Aggiornamento della soluzione
   it = 1
   x1 = x0 + s
@@ -391,18 +392,20 @@ def my_newtonSys_corde(fun, jac, x0, tolx, tolf, nmax):
 
   Xm = [np.linalg.norm(s, 1)/np.linalg.norm(x1,1)]
 
-  while np.linalg.norm(s, 1)/np.linalg.norm(x1,1) >= tolx and npl.norm(fx1, 1) >= tolf and it < nmax:
+  while it <= nmax and np.linalg.norm(fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
     x0 = x1
     it += 1
    
    
-    if npl.det(matjac) == 0:
+    if np.linalg.det(matjac) == 0:
         print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
         return None, None,None
     
-     
+    # Risolvo il sistema lineare avente come matrice dei coefficienti la
+    # matrice Jacobiana e come termine noto la Funzione vettoriale F valutata
+    # in x0
     
-    s = - npl.solve(matjac, fun(x0))
+    s = -np.linalg.solve(matjac, fun(x0))
 
     # Aggiornamento della soluzione
     x1 = x0 + s
@@ -415,19 +418,20 @@ def my_newtonSys_sham(fun, jac, x0, tolx, tolf, nmax):
 
   """
   Funzione per la risoluzione del sistema f(x)=0
-  mediante il metodo di Newton, con variante delle shamanski, in cui lo Jacobiano viene
-  aggiornato ogni un tot di iterazioni, deciso dall'utente.
+  mediante il metodo di Newton.
 
   Parametri
   ----------
-  fun : funzione vettoriale contenente ciascuna equazione non lineare del sistema.
-  jac : funzione che calcola la matrice Jacobiana della funzione vettoriale.
+  fun : stringa
+    Nome del file contenente la funzione non lineare.
+  jac : stringa
+    Nome del file contenente la matrice Jacobiana della funzione.
   x0 : array
     Vettore contenente l'approssimazione iniziale della soluzione.
   tolx : float
-    Parametro di tolleranza per l'errore tra due soluzioni successive.
+    Parametro di tolleranza per l'errore assoluto.
   tolf : float
-    Parametro di tolleranza sul valore della funzione.
+    Parametro di tolleranza per l'errore relativo.
   nmax : int
     Numero massimo di iterazioni.
 
@@ -442,11 +446,11 @@ def my_newtonSys_sham(fun, jac, x0, tolx, tolf, nmax):
   """
 
   matjac = jac(x0)
-  if npl.det(matjac) == 0:
+  if np.linalg.det(matjac) == 0:
     print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
     return None,None,None
 
-  s = - npl.solve(matjac, fun(x0))
+  s = -np.linalg.solve(matjac, fun(x0))
   # Aggiornamento della soluzione
   it = 1
   x1 = x0 + s
@@ -454,26 +458,30 @@ def my_newtonSys_sham(fun, jac, x0, tolx, tolf, nmax):
 
   Xm = [np.linalg.norm(s, 1)/np.linalg.norm(x1,1)]
   update=10  #Numero di iterazioni durante le quali non si aggiorna la valutazione dello Jacobiano nell'iterato attuale
-  while npl.norm(s, 1)/npl.norm(x1,1) > tolx and npl.norm(fx1, 1) > tolf and it < nmax:
-    x0 =  x1
+  while it <= nmax and np.linalg.norm(fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
+    x0 = x1
     it += 1
     if it%update==0:   #Valuto la matrice di iterazione nel nuovo iterato ogni "update" iterazioni
-        
-        matjac = jac(x0)
-        if npl.det(matjac) == 0:
+        matjac=jac(x0)
+   
+        if np.linalg.det(matjac) == 0:
            print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
            return None,None,None
         else:
-         
-           s = - npl.solve(matjac, fun(x0))
+         # Risolvo il sistema lineare avente come matrice dei coefficienti la
+        # matrice Jacobiana valutatata nell'iterato aggiornato x0  e come termine noto la Funzione vettoriale F valutata
+        # in x0
+           s = -np.linalg.solve(matjac, fun(x0))
     else:
-          
-           s = - npl.solve(matjac, fun(x0))
+         # Risolvo il sistema lineare avente come matrice dei coefficienti la
+        # matrice Jacobiana non aggiornata e come termine noto la Funzione vettoriale F valutata
+        # in x0
+           s = -np.linalg.solve(matjac, fun(x0))
 
     # Aggiornamento della soluzione
-    x1 = x0 +x1
+    x1 = x0 + s
     fx1 = fun(x1)
-    Xm.append(npl.norm(s, 1)/npl.norm(x1,1))
+    Xm.append(np.linalg.norm(s, 1)/np.linalg.norm(x1,1))
 
   return x1, it, Xm
 
@@ -686,6 +694,16 @@ def gauss_seidel(A,b,x0,toll,it_max):
         it=it+1
     return x,it,er_vet
 
+def LUsolve(P,A,L,U,b):
+    pb=np.dot(P,b)
+    y,flag=Lsolve(L,pb)
+    if flag == 0:
+         x,flag=Usolve(U,y)
+    else:
+        return [],flag
+
+    return x,flag
+
 def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
     errore=1000
     d=np.diag(A)
@@ -795,20 +813,20 @@ def conjugate_gradient(A,b,x0,itmax,tol):
    
     
     return x,vet_r,vec_sol,it
-
-def eqnorm(A,b):
-#Risolve un sistema sovradeterminato con il metodo delle equazioni normali
-  G= A.T@A
-  f= A.T@b
-  
-  L = spl.cholesky(G, lower=True)
-  U = L.T
-  
-  z= Lsolve(L,f)
-  x= Usolve(U, z)
-  
-  return x
     
+def eqnorm(A,b):
+ 
+    G=A.T@A
+     
+    f=A.T@b
+    L=spl.cholesky(G,lower=True)
+   
+    y,flag= Lsolve(L,f)
+    if flag==0:
+        x,flag=Usolve(L.T,y)
+    
+    
+    return x
 def qrLS(A,b):
 #Risolve un sistema sovradeterminato con il metodo QR-LS
     n=A.shape[1]  # numero di colonne di A

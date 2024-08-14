@@ -22,7 +22,7 @@ def metodo_bisezione(fname, a, b, tolx,tolf):
 
  fa=fname(a)
  fb=fname(b)
- if math.copysign(1,a)*math.copysign(1,b)>0 : 
+ if math.copysign(1,fa)*math.copysign(1,fb)>0 : 
      print("Non è possibile applicare il metodo di bisezione \n")
      return None, None,None
 
@@ -71,7 +71,7 @@ def falsi(fname, a, b, maxit, tolx,tolf):
  fa=fname(a)
  fb=fname(b)
  
- if  math.copysign(1,a)*math.copysign(1,b)>0 : 
+ if  math.copysign(1,fa)*math.copysign(1,fb)>=0 : 
       print("Non è possibile applicare il metodo di falsa posizione \n")
       return None, None,None
 
@@ -81,12 +81,12 @@ def falsi(fname, a, b, maxit, tolx,tolf):
  fxk=10
 
  
- while it <= maxit and abs(b-a)>=tolx : 
-    xk = a - fa*(b-a)/(fa-fb)
+ while it <= maxit and abs(b-a)>tolx and abs(fxk) > tolf: 
+    xk = a - fa*(b-a)/(fb -fa)
     v_xk.append(xk)
     it += 1
     fxk=fname(xk)
-    if fxk <= tolf:
+    if abs(fxk) <= tolf:
       return xk, it, v_xk
 
     # 
@@ -127,7 +127,7 @@ def corde(fname,m,x0,tolx,tolf,nmax):
   while it<nmax and  abs(fx1)>=tolf and abs(d)>=tolx*abs(x1) :
     x0 = x1
     fx0= fname(x0)
-    d= fx0/d
+    d= fx0/m
     '''
     #x1= ascissa del punto di intersezione tra  la retta che passa per il punto
     (xi,f(xi)) e ha pendenza uguale a m  e l'asse x
@@ -218,7 +218,7 @@ def secanti(fname,xm1,x0,tolx,tolf,nmax):
       fxm1= fname(xm1)
       fx0=fname(x0)
       d=fx0 * (x0-xm1)/(fx0-fxm1)
-      x1=xm1 - d
+      x1=x0 - d
       fx1=fname(x1)
       xk.append(x1)
       it=it+1
@@ -657,7 +657,7 @@ def newton_minimo_MOD(gradiente, Hess, x0, tolx, tolf, nmax):
 # quindi M = D
 #        N = -(E+F)
 #
-def jacobi(A,b,x0,toll,it_max):
+def prof_jacobi(A,b,x0,toll,it_max):
     errore=1000
     D=np.diag(A)
     n=A.shape[0]
@@ -686,10 +686,42 @@ def jacobi(A,b,x0,toll,it_max):
 # E triangolare inferiore con diagonale = 0, 
 # F triangolare superiore con diagonale = 0
 #
+# quindi M = D
+#        N = -(E+F)
+#
+def jacobi(A,b,x0,toll,it_max):
+    errore=1000
+    d=np.diag(A)
+    n=A.shape[0]
+    invM=np.diag(1/d)
+    E= np.tril(A, -1)
+    F= np.triu(A, 1)
+    N= - (E + F)
+    T= invM@N
+    autovalori=np.linalg.eigvals(T)
+    raggiospettrale= np.max(np.abs(autovalori))
+    print("raggio spettrale jacobi", raggiospettrale)
+    it=0
+    
+    er_vet=[]
+    while errore >= toll and it < it_max:
+        x= T@x0 + invM@b
+        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
+        er_vet.append(errore)
+        x0=x.copy()
+        it=it+1
+    return x,it,er_vet
+
+# A = M - N
+# A = D + E + F
+# con D diagonale
+# E triangolare inferiore con diagonale = 0, 
+# F triangolare superiore con diagonale = 0
+#
 # quindi M = E+D
 #        N = -F
 #
-def gauss_seidel(A,b,x0,toll,it_max):
+def prof_gauss_seidel(A,b,x0,toll,it_max):
     errore=1000
     D= np.diag(A)
     E=np.tril(A,-1)
@@ -705,6 +737,28 @@ def gauss_seidel(A,b,x0,toll,it_max):
     while it < it_max and errore >= toll:
         temp= b - F@x0
         x, flag = Lsolve(M, temp)
+        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
+        er_vet.append(errore)
+        x0=x.copy()
+        it=it+1
+    return x,it,er_vet
+
+def gauss_seidel(A,b,x0,toll,it_max):
+    errore=1000
+    D= np.diag(A)
+    E=np.tril(A,-1)
+    F=np.triu(A,1)
+    M= D+E
+    N= -F
+    T= np.dot(npl.inv(M), N)
+    autovalori=np.linalg.eigvals(T)
+    raggiospettrale= np.max(np.abs(autovalori))
+    print("raggio spettrale Gauss-Seidel ",raggiospettrale)
+    it=0
+    er_vet=[]
+    while it < it_max and errore >= toll:
+        t_noto= b - F@x0
+        x, flag = Lsolve(M, t_noto)
         errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
         er_vet.append(errore)
         x0=x.copy()
@@ -743,7 +797,7 @@ def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
     xnew=x0.copy()
     er_vet=[]
     while it < it_max and errore >= toll : 
-        temp= b-np.dot(F,xold)
+        temp= b-F@xold
         xtilde,flag=Lsolve(M,temp)
         xnew=(1-omega)*xold+omega*xtilde
         errore=np.linalg.norm(xnew-xold)/np.linalg.norm(xnew)
@@ -764,11 +818,11 @@ def steepestdescent(A,b,x0,itmax,tol):
     x = x0
 
      
-    r = A@x-b
-    p = -r
+    r = A@x-b  # residuo
+    p = -r     # opposto del residuo
     it = 0
-    nb=np.linalg.norm(b)
-    errore=np.linalg.norm(r)/nb
+  
+    errore=np.linalg.norm(r)/np.linalg.norm(b)
     vec_sol=[]
     vec_sol.append(x)
     vet_r=[]
@@ -779,7 +833,7 @@ def steepestdescent(A,b,x0,itmax,tol):
         it=it+1
         Ap=A@p
        
-        alpha = -(r.T@p)/(p.T@Ap)
+        alpha = (r.T@r)/(p.T@Ap)
                 
         x = x + alpha*p  #aggiornamento della soluzione nella direzione opposta a quella del gradiente: alpha mi dice dove fermarmi 
         #nella direzione del gradiente affinche F(xk+t p ) <F(xk)
@@ -787,12 +841,13 @@ def steepestdescent(A,b,x0,itmax,tol):
          
         vec_sol.append(x)
         r=r+alpha*Ap
-        errore=np.linalg.norm(r)/nb
+        errore=np.linalg.norm(r)/np.linalg.norm(b)
         vet_r.append(errore)
         p = -r #Direzione opposta alla direzione del gradiente
         
      
     return x,vet_r,vec_sol,it
+
 
 
 def conjugate_gradient(A,b,x0,itmax,tol):
@@ -805,7 +860,7 @@ def conjugate_gradient(A,b,x0,itmax,tol):
    # inizializzare le variabili necessarie
     x = x0
     
-    r = A.dot(x)-b
+    r = A@x-b
     p = -r
     it = 0
     nb=np.linalg.norm(b)
@@ -817,7 +872,7 @@ def conjugate_gradient(A,b,x0,itmax,tol):
 # utilizzare il metodo del gradiente coniugato per calcolare la soluzione
     while errore >= tol and it< itmax:
         it=it+1
-        Ap=A.dot(p)
+        Ap=A@p
         alpha = -(r.T@p)/(p.T@Ap)
         x = x + alpha *p
         vec_sol.append(x)

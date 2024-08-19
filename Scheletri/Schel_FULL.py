@@ -167,7 +167,7 @@ def newton(fname,fpname,x0,tolx,tolf,nmax):
   xk.append(x1)
   it=1
 
-  while abs(fx1-fx0) >= tolf and it  < nmax and abs(d) >= tolf * abs(x1):
+  while abs(fx1-fx0) >= tolf and it  < nmax and abs(d) >= tolx * abs(x1):
       x0= x1
       fx0= fname(x0)
       if abs(fpname(x0))<=np.spacing(1) :
@@ -643,7 +643,6 @@ def newton_minimo_MOD(gradiente, Hess, x0, tolx, tolf, nmax):
     x1 = x0 + s
     #Aggiorno il gradiente per la prossima iterazione 
     grad_fx1=np.array([gradiente[0](x1[0],x1[1]),gradiente[1](x1[0],x1[1])])
-    print(np.linalg.norm(s, 1))
     Xm.append(np.linalg.norm(s, 1))
 
   return x1, it, Xm
@@ -721,7 +720,7 @@ def jacobi(A,b,x0,toll,it_max):
 # quindi M = E+D
 #        N = -F
 #
-def prof_gauss_seidel(A,b,x0,toll,it_max):
+def gauss_seidel(A,b,x0,toll,it_max):
     errore=1000
     D= np.diag(A)
     E=np.tril(A,-1)
@@ -743,29 +742,8 @@ def prof_gauss_seidel(A,b,x0,toll,it_max):
         it=it+1
     return x,it,er_vet
 
-def gauss_seidel(A,b,x0,toll,it_max):
-    errore=1000
-    D= np.diag(A)
-    E=np.tril(A,-1)
-    F=np.triu(A,1)
-    M= D+E
-    N= -F
-    T= np.dot(npl.inv(M), N)
-    autovalori=np.linalg.eigvals(T)
-    raggiospettrale= np.max(np.abs(autovalori))
-    print("raggio spettrale Gauss-Seidel ",raggiospettrale)
-    it=0
-    er_vet=[]
-    while it < it_max and errore >= toll:
-        t_noto= b - F@x0
-        x, flag = Lsolve(M, t_noto)
-        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
-        er_vet.append(errore)
-        x0=x.copy()
-        it=it+1
-    return x,it,er_vet
 
-def LUsolve(P,A,L,U,b):
+def LUsolve(P,L,U,b):
     pb=np.dot(P,b)
     y,flag=Lsolve(L,pb)
     if flag == 0:
@@ -849,7 +827,6 @@ def steepestdescent(A,b,x0,itmax,tol):
     return x,vet_r,vec_sol,it
 
 
-
 def conjugate_gradient(A,b,x0,itmax,tol):
     n,m=A.shape
     if n!=m:
@@ -873,7 +850,7 @@ def conjugate_gradient(A,b,x0,itmax,tol):
     while errore >= tol and it< itmax:
         it=it+1
         Ap=A@p
-        alpha = -(r.T@p)/(p.T@Ap)
+        alpha = -(r.T@p)/(Ap.T@p)
         x = x + alpha *p
         vec_sol.append(x)
         rtr_old=r.T@r

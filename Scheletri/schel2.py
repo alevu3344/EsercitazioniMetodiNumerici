@@ -2,6 +2,7 @@ import numpy as np
 import numpy.linalg as npl
 import math
 import scipy.linalg as spl
+import SolveTriangular
 
 
 def metodo_bisezione(fname, a, b, tolx,tolf):
@@ -760,16 +761,16 @@ def conjugate_gradient(A,b,x0,itmax,tol):
 # utilizzare il metodo del gradiente coniugato per calcolare la soluzione
     while errore >= tol and it< itmax:
         it=it+1
-        Ap=#to do
-        alpha = -#to do
-        x =#to do
+        Ap= A@p
+        alpha = (r.T @ r) / (p.T @ Ap)
+        x = x + alpha * p
         vec_sol.append(x)
         rtr_old=r.T@r
         r=r+alpha*Ap
-        gamma= 
+        gamma= r.T@r/rtr_old
         errore=np.linalg.norm(r)/nb
         vet_r.append(errore)
-        p =  #to do
+        p =  -r +gamma*p
    
     
     return x,vet_r,vec_sol,it

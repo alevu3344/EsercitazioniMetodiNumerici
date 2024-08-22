@@ -47,7 +47,7 @@ def Lsolve(L,b):
     """
 #test dimensione
     m,n=L.shape
-    flag=0;
+    flag=0
     if n != m:
         print('errore: matrice non quadrata')
         flag=1

@@ -317,7 +317,7 @@ def my_newtonSys(fun, jac, x0, tolx, tolf, nmax):
   """
 
   matjac = jac(x0)
-  if np.linalg.det(matjac) == 0:
+  if npl.det(matjac) == 0:
     print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
     return None, None,None
 
@@ -327,9 +327,9 @@ def my_newtonSys(fun, jac, x0, tolx, tolf, nmax):
   x1 = x0 + s
   fx1 = fun(x1)
 
-  Xm = [np.linalg.norm(s, 1)/np.linalg.norm(x1,1)]
+  Xm = [npl.norm(s, 1)/npl.norm(x1,1)]
 
-  while it <= nmax and npl.norm(fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
+  while it <= nmax and npl.norm(fx1, 1) >= tolf and npl.norm(s, 1) >= tolx * npl.norm(x1, 1):
     x0 = x1
     it += 1
     matjac = jac(x0)
@@ -343,7 +343,9 @@ def my_newtonSys(fun, jac, x0, tolx, tolf, nmax):
     # Aggiornamento della soluzione
     x1 = x0 + s
     fx1 = fun(x1)
-    Xm.append(np.linalg.norm(s, 1)/np.linalg.norm(x1,1))
+    Xm.append(npl.norm(s, 1)/npl.norm(x1,1))
+    
+
 
   return x1, it, Xm
 
@@ -380,23 +382,23 @@ def my_newtonSys_corde(fun, jac, x0, tolx, tolf, nmax):
   """
 
   matjac = jac(x0)  #Utilizzo per tutte le iterazioni la matrice Jacobiana valutata nell'ierato iniziale, senza mai aggiornarla
-  if np.linalg.det(matjac) == 0:
+  if npl.det(matjac) == 0:
     print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
     return None, None,None
-  s = -np.linalg.solve(matjac, fun(x0))
+  s = -npl.solve(matjac, fun(x0))
   # Aggiornamento della soluzione
   it = 1
   x1 = x0 + s
   fx1 = fun(x1)
 
-  Xm = [np.linalg.norm(s, 1)/np.linalg.norm(x1,1)]
+  Xm = [npl.norm(s, 1)/npl.norm(x1,1)]
 
-  while it <= nmax and np.linalg.norm(fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
+  while it <= nmax and npl.norm(fx1, 1) >= tolf and npl.norm(s, 1) >= tolx * npl.norm(x1, 1):
     x0 = x1
     it += 1
    
    
-    if np.linalg.det(matjac) == 0:
+    if npl.det(matjac) == 0:
         print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
         return None, None,None
     
@@ -404,12 +406,12 @@ def my_newtonSys_corde(fun, jac, x0, tolx, tolf, nmax):
     # matrice Jacobiana e come termine noto la Funzione vettoriale F valutata
     # in x0
     
-    s = -np.linalg.solve(matjac, fun(x0))
+    s = -npl.solve(matjac, fun(x0))
 
     # Aggiornamento della soluzione
     x1 = x0 + s
     fx1 = fun(x1)
-    Xm.append(np.linalg.norm(s, 1)/np.linalg.norm(x1,1))
+    Xm.append(npl.norm(s, 1)/npl.norm(x1,1))
 
   return x1, it, Xm
 
@@ -445,42 +447,42 @@ def my_newtonSys_sham(fun, jac, x0, tolx, tolf, nmax):
   """
 
   matjac = jac(x0)
-  if np.linalg.det(matjac) == 0:
+  if npl.det(matjac) == 0:
     print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
     return None,None,None
 
-  s = -np.linalg.solve(matjac, fun(x0))
+  s = -npl.solve(matjac, fun(x0))
   # Aggiornamento della soluzione
   it = 1
   x1 = x0 + s
   fx1 = fun(x1)
 
-  Xm = [np.linalg.norm(s, 1)/np.linalg.norm(x1,1)]
+  Xm = [npl.norm(s, 1)/npl.norm(x1,1)]
   update=10  #Numero di iterazioni durante le quali non si aggiorna la valutazione dello Jacobiano nell'iterato attuale
-  while it <= nmax and np.linalg.norm(fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
+  while it <= nmax and npl.norm(fx1, 1) >= tolf and npl.norm(s, 1) >= tolx * npl.norm(x1, 1):
     x0 = x1
     it += 1
     if it%update==0:   #Valuto la matrice di iterazione nel nuovo iterato ogni "update" iterazioni
         matjac=jac(x0)
    
-        if np.linalg.det(matjac) == 0:
+        if npl.det(matjac) == 0:
            print("La matrice dello Jacobiano calcolata nell'iterato precedente non è a rango massimo")
            return None,None,None
         else:
          # Risolvo il sistema lineare avente come matrice dei coefficienti la
         # matrice Jacobiana valutatata nell'iterato aggiornato x0  e come termine noto la Funzione vettoriale F valutata
         # in x0
-           s = -np.linalg.solve(matjac, fun(x0))
+           s = -npl.solve(matjac, fun(x0))
     else:
          # Risolvo il sistema lineare avente come matrice dei coefficienti la
         # matrice Jacobiana non aggiornata e come termine noto la Funzione vettoriale F valutata
         # in x0
-           s = -np.linalg.solve(matjac, fun(x0))
+           s = -npl.solve(matjac, fun(x0))
 
     # Aggiornamento della soluzione
     x1 = x0 + s
     fx1 = fun(x1)
-    Xm.append(np.linalg.norm(s, 1)/np.linalg.norm(x1,1))
+    Xm.append(npl.norm(s, 1)/npl.norm(x1,1))
 
   return x1, it, Xm
 
@@ -520,7 +522,7 @@ def my_newton_minimo(gradiente, Hess, x0, tolx, tolf, nmax):
     matHess = Hess(x0)
     
     # Controllo se la matrice Hessiana è invertibile
-    if np.linalg.det(matHess) == 0:
+    if npl.det(matHess) == 0:
         print("La matrice Hessiana calcolata nell'iterato precedente non è a rango massimo")
         return None, None, None
     
@@ -528,16 +530,16 @@ def my_newton_minimo(gradiente, Hess, x0, tolx, tolf, nmax):
     grad_fx0 = gradiente(x0)
     
     # Calcolo del passo iniziale s risolvendo il sistema lineare Hess * s = -gradiente
-    s = -np.linalg.solve(matHess, gradiente(x0))
+    s = -npl.solve(matHess, gradiente(x0))
     
     # Aggiornamento della soluzione iniziale con il nuovo passo
     it = 1  # Inizializzo il contatore delle iterazioni
     x1 = x0 + s  # Aggiorno la soluzione
     grad_fx1 = gradiente(x1)  # Calcolo il gradiente nel nuovo punto x1
-    Xm = [np.linalg.norm(s, 1)]  # Salvo la norma del passo iniziale in una lista
+    Xm = [npl.norm(s, 1)]  # Salvo la norma del passo iniziale in una lista
     
     # Ciclo iterativo per aggiornare la soluzione fino alla convergenza o al massimo numero di iterazioni
-    while it <= nmax and np.linalg.norm(grad_fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
+    while it <= nmax and npl.norm(grad_fx1, 1) >= tolf and npl.norm(s, 1) >= tolx * npl.norm(x1, 1):
         
         # Aggiornamento della soluzione corrente
         x0 = x1
@@ -548,12 +550,12 @@ def my_newton_minimo(gradiente, Hess, x0, tolx, tolf, nmax):
         grad_fx0 = grad_fx1
         
         # Controllo se la matrice Hessiana è invertibile
-        if np.linalg.det(matHess) == 0:
+        if npl.det(matHess) == 0:
             print("La matrice Hessiana calcolata nell'iterato precedente non è a rango massimo")
             return None, None, None
         
         # Calcolo del nuovo passo s risolvendo Hess * s = -gradiente
-        s = -np.linalg.solve(matHess, grad_fx0)
+        s = -npl.solve(matHess, grad_fx0)
         
         # Aggiornamento della soluzione con il nuovo passo
         x1 = x0 + s
@@ -562,10 +564,10 @@ def my_newton_minimo(gradiente, Hess, x0, tolx, tolf, nmax):
         grad_fx1 = gradiente(x1)
         
         # Stampa della norma del passo corrente (utile per il debug o per monitorare la convergenza)
-        print(np.linalg.norm(s, 1))
+        print(npl.norm(s, 1))
         
         # Aggiungo la norma del passo corrente alla lista Xm
-        Xm.append(np.linalg.norm(s, 1))
+        Xm.append(npl.norm(s, 1))
     
     # Ritorno la soluzione finale, il numero di iterazioni e la lista delle norme dei passi
     return x1, it, Xm
@@ -607,18 +609,18 @@ def newton_minimo_MOD(gradiente, Hess, x0, tolx, tolf, nmax):
 
   gradiente_x0=np.array([gradiente[0](x0[0], x0[1]),gradiente[1](x0[0], x0[1])])
    
-  if np.linalg.det(matHess) == 0:
+  if npl.det(matHess) == 0:
     print("La matrice Hessiana calcolata nell'iterato precedente non è a rango massimo")
     return None, None, None
       
-  s = -np.linalg.solve(matHess, gradiente_x0)
+  s = -npl.solve(matHess, gradiente_x0)
   # Aggiornamento della soluzione
   it = 1
   x1 = x0 + s
   grad_fx1=np.array([gradiente[0](x1[0],x1[1]),gradiente[1](x1[0],x1[1])])
-  Xm = [np.linalg.norm(s, 1)]
+  Xm = [npl.norm(s, 1)]
   
-  while it <= nmax and np.linalg.norm(grad_fx1, 1) >= tolf and np.linalg.norm(s, 1) >= tolx * np.linalg.norm(x1, 1):
+  while it <= nmax and npl.norm(grad_fx1, 1) >= tolf and npl.norm(s, 1) >= tolx * npl.norm(x1, 1):
      
     x0 = x1
     it += 1
@@ -626,7 +628,7 @@ def newton_minimo_MOD(gradiente, Hess, x0, tolx, tolf, nmax):
                       [Hess[1, 0](x0[0], x0[1]), Hess[1, 1](x0[0], x0[1])]])
     grad_fx0=grad_fx1
       
-    if np.linalg.det(matHess) == 0:
+    if npl.det(matHess) == 0:
        
       print("La matrice Hessiana calcolata nell'iterato precedente non è a rango massimo")
       return None, None, None
@@ -636,13 +638,13 @@ def newton_minimo_MOD(gradiente, Hess, x0, tolx, tolf, nmax):
     # matrice Hessiana e come termine il vettore gradiente calcolato nell'iterato precedente
     # in x0
                 #NB: in fx1 è memorizzato il gradiente nell'iterato attuale
-    s = -np.linalg.solve(matHess, grad_fx0)
+    s = -npl.solve(matHess, grad_fx0)
      
     # Aggiornamento della soluzione
     x1 = x0 + s
     #Aggiorno il gradiente per la prossima iterazione 
     grad_fx1=np.array([gradiente[0](x1[0],x1[1]),gradiente[1](x1[0],x1[1])])
-    Xm.append(np.linalg.norm(s, 1))
+    Xm.append(npl.norm(s, 1))
 
   return x1, it, Xm
 
@@ -664,7 +666,7 @@ def prof_jacobi(A,b,x0,toll,it_max):
     F=np.triu(A,1)
     N=-(E+F)
     T=np.dot(M_inv,N)
-    autovalori=np.linalg.eigvals(T)
+    autovalori=npl.eigvals(T)
     raggiospettrale=np.max(np.abs(autovalori))
     print("raggio spettrale jacobi", raggiospettrale)
     it=0
@@ -672,7 +674,7 @@ def prof_jacobi(A,b,x0,toll,it_max):
     er_vet=[]
     while it < it_max and errore >= toll:
         x=(b+np.dot(N,x0))/D.reshape(n,1)
-        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
+        errore=npl.norm(x-x0)/npl.norm(x)
         er_vet.append(errore)
         x0=x.copy()
         it=it+1
@@ -696,7 +698,7 @@ def jacobi(A,b,x0,toll,it_max):
     F= np.triu(A, 1)
     N= - (E + F)
     T= invM@N
-    autovalori=np.linalg.eigvals(T)
+    autovalori=npl.eigvals(T)
     raggiospettrale= np.max(np.abs(autovalori))
     print("raggio spettrale jacobi", raggiospettrale)
     it=0
@@ -704,7 +706,7 @@ def jacobi(A,b,x0,toll,it_max):
     er_vet=[]
     while errore >= toll and it < it_max:
         x= T@x0 + invM@b
-        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
+        errore=npl.norm(x-x0)/npl.norm(x)
         er_vet.append(errore)
         x0=x.copy()
         it=it+1
@@ -727,7 +729,7 @@ def gauss_seidel(A,b,x0,toll,it_max):
     M= D+E
     N= -F
     T= np.dot(npl.inv(M), N)
-    autovalori=np.linalg.eigvals(T)
+    autovalori=npl.eigvals(T)
     raggiospettrale= np.max(np.abs(autovalori))
     print("raggio spettrale Gauss-Seidel ",raggiospettrale)
     it=0
@@ -735,7 +737,7 @@ def gauss_seidel(A,b,x0,toll,it_max):
     while it < it_max and errore >= toll:
         temp= b - F@x0
         x, flag = Lsolve(M, temp)
-        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
+        errore=npl.norm(x-x0)/npl.norm(x)
         er_vet.append(errore)
         x0=x.copy()
         it=it+1
@@ -763,8 +765,8 @@ def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
     N=-F
     Momega=D+omega*E
     Nomega=(1-omega)*D-omega*F
-    T=np.dot(np.linalg.inv(Momega),Nomega)
-    autovalori=np.linalg.eigvals(T)
+    T=np.dot(npl.inv(Momega),Nomega)
+    autovalori=npl.eigvals(T)
     raggiospettrale=np.max(np.abs(autovalori))
     print("raggio spettrale Gauss-Seidel SOR ", raggiospettrale)
     
@@ -777,7 +779,7 @@ def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
         temp= b-F@xold
         xtilde,flag=Lsolve(M,temp)
         xnew=(1-omega)*xold+omega*xtilde
-        errore=np.linalg.norm(xnew-xold)/np.linalg.norm(xnew)
+        errore=npl.norm(xnew-xold)/npl.norm(xnew)
         er_vet.append(errore)
         xold=xnew.copy()
         it=it+1
@@ -799,7 +801,7 @@ def steepestdescent(A,b,x0,itmax,tol):
     p = -r     # opposto del residuo
     it = 0
   
-    errore=np.linalg.norm(r)/np.linalg.norm(b)
+    errore=npl.norm(r)/npl.norm(b)
     vec_sol=[]
     vec_sol.append(x)
     vet_r=[]
@@ -818,7 +820,7 @@ def steepestdescent(A,b,x0,itmax,tol):
          
         vec_sol.append(x)
         r=r+alpha*Ap
-        errore=np.linalg.norm(r)/np.linalg.norm(b)
+        errore=npl.norm(r)/npl.norm(b)
         vet_r.append(errore)
         p = -r #Direzione opposta alla direzione del gradiente
         
@@ -839,8 +841,8 @@ def conjugate_gradient(A,b,x0,itmax,tol):
     r = A@x-b
     p = -r
     it = 0
-    nb=np.linalg.norm(b)
-    errore=np.linalg.norm(r)/nb
+    nb=npl.norm(b)
+    errore=npl.norm(r)/nb
     vec_sol=[]
     vec_sol.append(x0)
     vet_r=[]
@@ -855,7 +857,7 @@ def conjugate_gradient(A,b,x0,itmax,tol):
         rtr_old=r.T@r
         r=r+alpha*Ap
         gamma=r.T@r/rtr_old
-        errore=np.linalg.norm(r)/nb
+        errore=npl.norm(r)/nb
         vet_r.append(errore)
         p = -r+gamma*p  #La nuova direzione appartiene al piano individuato da -r e p. gamma è scelto in maniera tale che la nuova direzione
         #sia coniugata rispetto alla direzione precedente( che geometricamente significa che punti verso il centro)
@@ -880,7 +882,7 @@ def qrLS(A,b):
     Q,R=spl.qr(A)
     h= Q.T@b
     x,flag=Usolve(R[0:n,:],h[0:n])
-    residuo=np.linalg.norm(h[n:])**2
+    residuo=npl.norm(h[n:])**2
     return x,residuo
 
 def SVDLS(A,b):
@@ -898,7 +900,7 @@ def SVDLS(A,b):
     #Risolve il sistema diagonale di dimensione kxk avene come matrice dei coefficienti la matrice Sigma
     c= d1/s1
     x=V[:,:k]@c 
-    residuo=np.linalg.norm(d[k:])**2
+    residuo=npl.norm(d[k:])**2
     return x,residuo
 
 def plagr(xnodi,j):

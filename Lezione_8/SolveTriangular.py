@@ -70,3 +70,12 @@ def Lsolve(L,b):
      
     return x,flag
 
+def LUsolve(P,L,U,b):
+    pb=np.dot(P,b)
+    y,flag=Lsolve(L,pb)
+    if flag == 0:
+         x,flag=Usolve(U,y)
+    else:
+        return [],flag
+
+    return x,flag

@@ -564,7 +564,7 @@ def my_newton_minimo(gradiente, Hess, x0, tolx, tolf, nmax):
         grad_fx1 = gradiente(x1)
         
         # Stampa della norma del passo corrente (utile per il debug o per monitorare la convergenza)
-        print(npl.norm(s, 1))
+        #print(npl.norm(s, 1))
         
         # Aggiungo la norma del passo corrente alla lista Xm
         Xm.append(npl.norm(s, 1))
@@ -721,7 +721,7 @@ def jacobi(A,b,x0,toll,it_max):
 # quindi M = E+D
 #        N = -F
 #
-def gauss_seidel(A,b,x0,toll,it_max):
+def gauss_seidel_false(A,b,x0,toll,it_max):
     errore=1000
     D= np.diag(A)
     E=np.tril(A,-1)
@@ -743,6 +743,30 @@ def gauss_seidel(A,b,x0,toll,it_max):
         it=it+1
     return x,it,er_vet
 
+def gauss_seidel(A,b,x0,toll,it_max):
+    errore=1000
+    d=np.diag(A)
+    D=np.diag(d)
+    E=np.tril(A,-1)
+    F=np.triu(A,1)
+    M=D+E
+    N=-F
+    T=npl.inv(M)@N
+    autovalori=np.linalg.eigvals(T)
+    raggiospettrale=np.max(np.abs(autovalori))
+    print("raggio spettrale Gauss-Seidel ",raggiospettrale)
+    it=0
+    er_vet=[]
+    while it<=it_max and errore>=toll:
+        temp=b -F@x0
+        x,flag=Lsolve(M,temp)  #Calcolare la soluzione al passo k equivale a calcolare la soluzione del sistema triangolare con matrice M=D+E
+                               # e termine noto b-F@x0
+        errore=np.linalg.norm(x-x0)/np.linalg.norm(x)
+        er_vet.append(errore)
+        x0=x.copy()
+        it=it+1
+    return x,it,er_vet
+
 
 def LUsolve(P,L,U,b):
     pb=np.dot(P,b)
@@ -754,7 +778,56 @@ def LUsolve(P,L,U,b):
 
     return x,flag
 
+def QRsolve(A, b):
+   Q, R, = spl.qr(A)
+   h = Q.T@b
+   x, flag = Usolve(R, h)
+   return x
+
+def CHOLsolve(A, b):
+  if not np.allclose(A.T,A):
+    print("Matrice non simmetrica")
+    if np.any(npl.eigvals(A) <= 0) : 
+      print("Matrice non definita positiva")
+    return None
+  
+  G = spl.cholesky(A, lower= True)
+
+  y, flag = Lsolve(G, b)
+  x, flag = Usolve(G.T, y)
+  return x
+
 def gauss_seidel_sor(A,b,x0,toll,it_max,omega):
+    errore=1000
+    d=np.diag(A)
+    D=np.diag(d)
+    Dinv=np.diag(1/d)
+    E=np.tril(A,-1)
+    F=np.triu(A,1)
+    Momega=D+omega*E
+    Nomega=(1-omega)*D-omega*F
+    T=npl.inv(Momega)@Nomega
+    autovalori=np.linalg.eigvals(T)
+    raggiospettrale=np.max(np.abs(autovalori))
+    print("raggio spettrale Gauss-Seidel SOR ", raggiospettrale)
+    
+    M=D+E
+    N=-F
+    it=0
+    xold=x0.copy()
+    xnew=x0.copy()
+    er_vet=[]
+    while it<=it_max and errore>=toll:
+        temp=b-F@xold
+        xtilde,flag=Lsolve(M,temp)
+        xnew=(1-omega)*xold+omega*xtilde
+        errore=np.linalg.norm(xnew-xold)/np.linalg.norm(xnew)
+        er_vet.append(errore)
+        xold=xnew.copy()
+        it=it+1
+    return xnew,it,er_vet
+
+def gauss_seidel_sor_false(A,b,x0,toll,it_max,omega):
     errore=1000
     d=np.diag(A)
     D=np.diag(d)
@@ -799,7 +872,7 @@ def steepestdescent(A,b,x0,itmax,tol):
      
     r = A@x-b  # residuo
     p = -r     # opposto del residuo
-    it = 0
+    it = 1
   
     errore=npl.norm(r)/npl.norm(b)
     vec_sol=[]
@@ -840,7 +913,7 @@ def conjugate_gradient(A,b,x0,itmax,tol):
     
     r = A@x-b
     p = -r
-    it = 0
+    it = 1
     nb=npl.norm(b)
     errore=npl.norm(r)/nb
     vec_sol=[]
@@ -943,5 +1016,4 @@ def InterpL(x, y, xx):
     L[:,j]= np.polyval(p,xx)
 
   return L@y
-
 
